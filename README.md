@@ -1,27 +1,48 @@
 # JR East Train Info
 
-A program that allows AJAX requests to retrieve JR East train statuses.
+A program that allows AJAX (or HTTP) requests to retrieve JR East train statuses.
 
 ### Introduction
 
-When I was making my home noticeboard (https://github.com/Rahi374/home-noticeboard), one of the things I wanted to be displayed was which trains are late, but the JR East sites don't have an API for it and all the other sites that have such information are crowd-sourced and aren't too accurate, or are incomplete. (Also the JR East app is super-laggy and it takes one train station to load the information it's useless.) So, I decided to write this program that will reply with JSON the train statuses when requested for it! Hopefully it works.
+When I was making my home noticeboard (https://github.com/Rahi374/home-noticeboard), one of the things I wanted to be displayed was which trains are late, but the JR East sites don't have an API for it and all the other sites that have such information are crowd-sourced and aren't too accurate, or are incomplete. (Also the JR East app is super-laggy and it takes one train station to load the information; it's useless.) So, I decided to write this program that will reply with JSON the train statuses when requested for it! Hopefully it works.
 
 Also JR East doesn't allow me to distribute the train status information from their page so the server will only be available in my internal network, so if you want this too, set it up in an internal network. Or feel free to publish it to the internet. It's not likely JR will find you and sue you.
 
 It shouldn't be that hard to transform this code to cover other train organizations. I don't usually use trains of other companies so that's why I haven't covered them.
 
-Also note that the information will be displayed in Japanese (for now, later I'll add an English option).
+Also note that the information will be displayed in Japanese (for now. Later I'll add an English option).
 
 ### Requirements
 
-- Nokogiri
-- Sinatra
+- ruby (I used 2.1.5, but I think any version should be fine.)
+- nokogiri
+- sinatra
+- sinatra-contrib (This is needed for sinatra/json)
+- sinatra-cross_origin
+
+The last four can be `gem install`ed
 
 ### Installation
 
+Get all the above dependencies, git clone this repo, then `ruby server.rb`.
+
 ### Usage
 
+Make an AJAX (or HTTP) request to `localhost:4567/status/train_name`.
+
+Obviously substitute `train_name` with an actual train name. The name may either be in all-lowercase romaji or full Japanese. Check out `server.rb` for the list of all the train names that can be used, and for the exact romaji spelling or exact kanji usage (at the moment it's kind of picky.).
+
+So far I only support Kanto area JR trains.
+
+The response will be in JSON. (I don't have any plans to support XML, but if anybody wants that, it could be arranged.)
+
 ### Future plans
+
+Check out all the TODOs in `server.rb`.
+
+The main issue right now is that in order to use this program you have to be bilingual, so that's the first thing to fix. The other major thing to fix is that the names of the trains are rather specific.
+
+But, I think this is a good start. I managed to get the program to dispense information.
 
 ### Contributors
 
