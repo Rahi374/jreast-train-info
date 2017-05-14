@@ -135,6 +135,8 @@ train_hash = {
   "ueno_tokyo" => "上野東京ライン",
   "shonan_shinjuku" => "湘南新宿ライン"
 }
+rev_train_hash = {}
+train_hash.map{|k, v| rev_train_hash[v] = k}
 
 # This hash is not used yet, but will be used later
 # for when I add proper English support
@@ -184,8 +186,20 @@ train_hash_translate = {
   "湘南新宿ライン" => "Shonan-Shinjuku Line"
 }
 
+# Input Japanese time string
+# Output iso8601 time string
+def transform_time t
+  year  = t.match(/[0-9]{4}年/)[0][0..-2].to_i
+  month = t.match(/[0-9]{1,2}月/)[0][0..-2].to_i
+  day   = t.match(/[0-9]{1,2}日/)[0][0..-2].to_i
+  hour  = t.match(/[0-9]{1,2}時/)[0][0..-2].to_i
+  min   = t.match(/[0-9]{1,2}分/)[0][0..-2].to_i
+  tz    = "+9"
+  DateTime.iso8601(DateTime.new(year, month, day, hour, min, 0, tz).to_s)
+end
+
 # The main method. Retrives the status of a train
-get "/status/:train" do
+get "/:train" do
   # A reminder on how Sinatra params work
   # params["train"]
 
@@ -214,8 +228,9 @@ get "/status/:train" do
   end
 
   # Fetch the "updated at" time
-  # TODO Change this to a time-type value, not just a (Japanese) string
-  updated_at = doc.xpath("//h2").children[2].text[7..-1]
+  # DONE Change this to a time-type value, not just a (Japanese) string
+  t = doc.xpath("//h2").children[2].text[7..-1]
+  updated_at = transform_time t
 
   # Build the train_data hash from the name and status of the train
   # (fetched from the HTML doc)
@@ -232,7 +247,7 @@ get "/status/:train" do
   if train_data[:train_status] != "平常運転"
     train_late_data = {
       train_reason: doc.xpath("//tr")[i+1].children[1].text,
-      train_late_updated_at: doc.xpath("//tr")[i].children[5].text[0..-4]
+      train_late_updated_at: transform_time(doc.xpath("//tr")[i].children[5].text[0..-4])
     }
   end
 
@@ -253,7 +268,16 @@ get "/status/:train" do
 end
 
 
+get "/" do
+  return json response: {
+                info: "Use /:train_name, where :train_name is one from the train_list",
+                train_list: rev_train_hash,
+                error: "No train specified"}
+end
+
+
+
 # Misc TODOs:
 # - Return train statuses of all related lines (Chuo, Joban)
 #   (eg. If requested for Chuo line, return statuses of Chuo Main line, Chuo Rapid, and Chuo local)
-# - Maybe add a Gemfile?
+# - DONE - Maybe add a Gemfile?
